@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct coordinate {
   int x, y;
@@ -43,46 +44,34 @@ int get_valid_movements(int n, coordinate tour[], coordinate valid_movements[], 
   return movements_length;
 }
 
-int knight(coordinate tour[], coordinate c, int n, int* stop)
+int knight(coordinate tour[], coordinate c, int n)
 {
   tour[n] = c;
   if(n == 63)
-    *stop = 1;
-
-  if(*stop)
-    return;
+    return 1;
 
   // definicao de proximos movimentos validos 
   coordinate valid_moves[8];
   int movements_length = get_valid_movements(n, tour, valid_moves, c);
 
-  // guarda para caminho sem fim
-  if(movements_length == 0)
-    return;
-
-  for(int i=0; i<movements_length && !*(stop); i++) {
-    knight(tour, valid_moves[i], ++n, stop);
-    if(*stop)
-      break;
-    n--;
-    if(i==movements_length-1 && n==0) {
-      printf("Possibilidades exauridas; Nenhum passeio encontrado.\n");
-      return false;
+  for(int i=0; i<movements_length; i++) {
+    if(knight(tour, valid_moves[i], ++n)) {
+      return 1;
     }
+    n--;
   }
-
-  if(n==0)
-    return true;
+  return 0;
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
-  int stop = 0;
   coordinate tour[64];
-  coordinate c = {0, 0};
-  if(!knight(tour, c, 0, &stop))
+  coordinate c = {atoi(argv[1]), atoi(argv[2])};
+  if(!knight(tour, c, 0)) {
+    printf("Possibilidades exauridas; Nenhum passeio encontrado.\n");
     return 0;
+  }
 
   // tabuleiro para mostrar o tour
   int board[8][8];
@@ -105,6 +94,6 @@ int main()
     else  
       printf("%d\n", board[i][7]);
   }
-
+  
 }
 
