@@ -9,14 +9,17 @@ int get_valid_movements(int n, coordinate tour[], coordinate valid_movements[], 
   int moves_y[8] = { 2, 1, -1, -2, -2, -1, 1, 2 };
   int moves_x[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
 
+  int mov_insertion_idx = 0;
   int movements_length = 0;
+  // percorre as opcoes de variacao de posicao
   for(int i=0; i<8; i++) {
     // determina se as coordenadas ja se encontram no tour
     int is_mov_in_tour = 0;
+    // percorre o tour
     for(int j=0; j<n; j++) {
       is_mov_in_tour = 
-        tour[j].x == c.x + moves_x[i] 
-        && tour[j].y == c.y + moves_y[i];
+        tour[j].x == c.x + moves_x[i] &&
+        tour[j].y == c.y + moves_y[i];
 
       if(is_mov_in_tour)
         break;
@@ -33,7 +36,7 @@ int get_valid_movements(int n, coordinate tour[], coordinate valid_movements[], 
       coordinate new_move;
       new_move.x = c.x + moves_x[i];
       new_move.y = c.y + moves_y[i];
-      valid_movements[i] = new_move;
+      valid_movements[mov_insertion_idx++] = new_move;
     }
   
   }  
@@ -43,8 +46,7 @@ int get_valid_movements(int n, coordinate tour[], coordinate valid_movements[], 
 void knight(coordinate tour[], coordinate c, int n, int* stop)
 {
   tour[n] = c;
-  // ate 62 pois a primeira coordenada eh preenchida por padrao
-  if(n == 62)
+  if(n == 63)
     *stop = 1;
 
   if(*stop)
@@ -58,14 +60,12 @@ void knight(coordinate tour[], coordinate c, int n, int* stop)
   if(movements_length == 0)
     return;
 
-  for(int i=0; i<movements_length; i++) {
+  for(int i=0; i<movements_length && !*(stop); i++) {
     knight(tour, valid_moves[i], ++n, stop);
+    if(*stop)
+      break;
     n--;
   }
-
-  // caso a iteracao inteira tenha dado errado
-  // aparentemente inutil ???
-  // n--;
 }
 
 
@@ -75,8 +75,28 @@ int main()
   coordinate tour[64];
   coordinate c = {0, 0};
   knight(tour, c, 0, &stop);
-  for(int i=0; i<63; i++){
-    printf("[COORDINATE]\t[%d %d]\n", tour[i].x, tour[i].y);
+
+
+  // tabuleiro para mostrar o tour
+  int board[8][8];
+  for(int i=0; i<64; i++){
+    board[tour[i].x][tour[i].y] = i+1;
+  }
+
+  // printando o tabuleiro
+  for(int i=0; i<8; i++) {
+    for(int j=0; j<7; j++) {
+      // verifica se o numero tem apenas um digito
+      // se sim, printa o numero com um zero a frente
+      if(board[i][j] /10 < 1)
+        printf("0%d ", board[i][j]);
+      else  
+        printf("%d ", board[i][j]);
+    }
+    if(board[i][7] /10 < 1)
+      printf("0%d\n", board[i][7]);
+    else  
+      printf("%d\n", board[i][7]);
   }
 
 }
