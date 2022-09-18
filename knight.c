@@ -43,7 +43,7 @@ int get_valid_movements(int n, coordinate tour[], coordinate valid_movements[], 
   return movements_length;
 }
 
-void knight(coordinate tour[], coordinate c, int n, int* stop)
+int knight(coordinate tour[], coordinate c, int n, int* stop)
 {
   tour[n] = c;
   if(n == 63)
@@ -65,7 +65,14 @@ void knight(coordinate tour[], coordinate c, int n, int* stop)
     if(*stop)
       break;
     n--;
+    if(i==movements_length-1 && n==0) {
+      printf("Possibilidades exauridas; Nenhum passeio encontrado.\n");
+      return false;
+    }
   }
+
+  if(n==0)
+    return true;
 }
 
 
@@ -74,8 +81,8 @@ int main()
   int stop = 0;
   coordinate tour[64];
   coordinate c = {0, 0};
-  knight(tour, c, 0, &stop);
-
+  if(!knight(tour, c, 0, &stop))
+    return 0;
 
   // tabuleiro para mostrar o tour
   int board[8][8];
