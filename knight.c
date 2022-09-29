@@ -5,7 +5,7 @@ typedef struct coordinate {
   int x, y;
 } coordinate;
 
-// preenche o vetor valid_movements e retorna a quantidade de itens adicionados
+// acha uma coordenado no tour
 int tour_find(coordinate tour[], int tour_size, coordinate c)
 {
   // determina se as coordenadas ja se encontram no tour
@@ -30,25 +30,27 @@ int are_coord_in_bounds(coordinate test_coord)
    && (test_coord.x >= 0 && test_coord.x < 8);
 }
 
-int get_next_movements(int tour_size, coordinate tour[], coordinate valid_movements[], coordinate curr_pos) {
-  int moves_y[8] = { 2, 1, -1, -2, -2, -1, 1, 2 };
-  int moves_x[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
+// preenche o vetor mov_buffer retorna a quantidade de itens adicionados
+int get_next_movements(int tour_size, coordinate tour[], coordinate mov_buffer[], coordinate curr_pos) {
+  coordinate moves[] = {
+    {1,2}, {2,1}, {2,-1}, {1,-2}, {-1,-2}, {-2,-1}, {-2,1}, {-1,2} 
+  };
 
   int movements_length = 0;
   for(int i=0; i<8; i++) {
-    coordinate test_coord = {curr_pos.x + moves_x[i], curr_pos.y + moves_y[i]};
+    coordinate test_coord = {curr_pos.x + moves[i].x, curr_pos.y + moves[i].y};
     int is_mov_in_tour = tour_find(tour, tour_size, test_coord);
     int coord_in_bounds = are_coord_in_bounds(test_coord);
 
     if(!is_mov_in_tour && coord_in_bounds) {
-      valid_movements[movements_length++] = test_coord;
+      mov_buffer[movements_length++] = test_coord;
     }
 
   }
   return movements_length;
 }
 
-int knight(coordinate tour[], coordinate c, int n)
+int knight(coordinate tour[], coordinate c, int n, long long int* backtracks, int* fail)
 {
   tour[n] = c;
   if(n == 63)
@@ -56,12 +58,26 @@ int knight(coordinate tour[], coordinate c, int n)
 
   // definicao de proximos movimentos validos 
   coordinate valid_moves[8];
-  int movements_length = get_valid_movements(n, tour, valid_moves, c);
+  int movements_length = get_next_movements(n, tour, valid_moves, c);
+  if(movements_length == 0)
+  {
+    *fail = 1;
+    return 0;
+  }
 
   for(int i=0; i<movements_length; i++) {
-    if(knight(tour, valid_moves[i], ++n)) {
+    if(*fail)
+    {
+      *fail = 0;
+      // *(backtracks)++;
+      return 0;
+    }
+
+    if(knight(tour, valid_moves[i], ++n, backtracks, fail)) {
       return 1;
     }
+
+    *(backtracks) += 1;
     n--;
   }
   return 0;
@@ -92,9 +108,11 @@ void board_print(int board[8][8], coordinate tour[])
 
 int main(int argc, char** argv)
 {
+  int fail = 0;
+  long long int backtracks = 0;
   coordinate tour[64];
   coordinate c = {atoi(argv[1]), atoi(argv[2])};
-  if(!knight(tour, c, 0)) {
+  if(!knight(tour, c, 0, &backtracks, &fail)) {
     printf("Possibilidades exauridas; Nenhum passeio encontrado.\n");
     return 0;
   }
@@ -102,5 +120,6 @@ int main(int argc, char** argv)
   // tabuleiro para mostrar o tour
   int board[8][8];
   board_print(board, tour) ;
+  printf("Retrocidido: %llu vezes\n", backtracks);
 }
 
