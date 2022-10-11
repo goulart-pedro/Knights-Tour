@@ -19,6 +19,14 @@ int are_coord_in_bounds(coordinate test_coord)
    && (test_coord.x >= 0 && test_coord.x < 8);
 }
 
+int is_mov_valid(int tour[][8], coordinate test_coord)
+{
+  int is_mov_in_tour = is_in_tour(tour, test_coord);
+  int coord_in_bounds = are_coord_in_bounds(test_coord);
+
+  return coord_in_bounds && !is_mov_in_tour;
+}
+
 // preenche o vetor mov_buffer retorna a quantidade de itens adicionados
 int get_next_movements(int tour_size, int tour[8][8], coordinate mov_buffer[], coordinate curr_pos) {
   coordinate moves[] = {
@@ -28,13 +36,8 @@ int get_next_movements(int tour_size, int tour[8][8], coordinate mov_buffer[], c
   int movements_length = 0;
   for (int i=0; i<8; i++) {
     coordinate test_coord = {curr_pos.x + moves[i].x, curr_pos.y + moves[i].y};
-    int is_mov_in_tour = is_in_tour(tour, test_coord);
-    int coord_in_bounds = are_coord_in_bounds(test_coord);
-
-    if(coord_in_bounds && !is_mov_in_tour) {
+    if(is_mov_valid(tour, test_coord))
       mov_buffer[movements_length++] = test_coord;
-    }
-
   }
   return movements_length;
 }
@@ -48,7 +51,6 @@ int knight(int tour[8][8], coordinate c, int n, long long int* backtracks, int* 
   // definicao de proximos movimentos validos 
   coordinate valid_moves[8];
   int movements_length = get_next_movements(n, tour, valid_moves, c);
-    
 
   for (int i=0; i<movements_length; i++) {
     if(*fail)
