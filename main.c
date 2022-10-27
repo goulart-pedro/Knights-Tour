@@ -3,5 +3,7 @@
 
 int main(int argc, char** argv)
 {
-  passeio(atoi(argv[1]) -1, atoi(argv[2]) -1);
+  for (int i=1; i<9; i++)
+    for(int j=1; j<9; j++)
+      passeio(i,j);
 }

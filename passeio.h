@@ -18,7 +18,7 @@ typedef struct
 // Pre-condicao:  coordenada c eh valida
 int is_visited(int board[8][8], coordinate c)
 {
-  return board[c.y][c.x] != -1;
+  return board[c.x][c.y] != -1;
 }
 
 // determina se as coordenadas nao levam a uma posicao fora do tabuleiro
@@ -54,7 +54,7 @@ int get_neighbours(int board[8][8], coordinate neighbour_buffer[], coordinate cu
 
 void visit(int board[][8], coordinate c, int n)
 {
-  board[c.y][c.x] = n;
+  board[c.x][c.y] = n;
 }
 
 int compare_coordinate(const void* a, const void *b)
@@ -132,7 +132,7 @@ void passeio(int x, int y)
   horse h = {0, 0, 0};
   int n = 1;
 
-  coordinate c = {x, y};
+  coordinate c = {x-1, y-1};
   int tour_result = !tour(board, c, n, &h);
   if(tour_result == 1) {
     printf("Possibilidades exauridas; Nenhum passeio encontrado.\n");

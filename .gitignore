@@ -1,5 +1,8 @@
 .vscode
-makefile
 .gitignore
 record.txt
 main
+verificar.c
+verificar
+knight
+saida.txt
