@@ -1,6 +1,6 @@
-compile: clean
-	gcc -o knight main.c -lm
-	gcc -o verificar verificar.c -lm
+default: clean
+	gcc -o knight main.c 
+	gcc -o verificar verificar.c 
 
 localtest: clean
 	./knight
