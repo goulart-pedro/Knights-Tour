@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 8 
+#define N 8
 
 typedef struct
 {
@@ -12,11 +12,12 @@ typedef struct
 {
   long int visits;
   long int backtracks;
-  int tour_impossible;
+  int was_leaf_found; // indica se e necessario retroceder pois o tour e impossivel
 } horse;
 
+// substitui a funcao pow()
 // necessario para nao incluir a math.h
-int power2(int x, int exp)
+int power2(int x)
 {
   return x*x;
 }
@@ -35,7 +36,7 @@ int is_coord_in_bounds(coordinate test_coord)
    && (test_coord.x >= 0 && test_coord.x < N);
 }
 
-int is_coord_valid(int board[][N], coordinate test_coord)
+int is_coord_valid(int board[N][N], coordinate test_coord)
 {
   int is_mov_in_tour = is_visited(board, test_coord);
   int coord_in_bounds = is_coord_in_bounds(test_coord);
@@ -62,7 +63,7 @@ void visit(int board[][N], coordinate c, int n)
   board[c.x][c.y] = n;
 }
 
-int compare_coordinate(const void* a, const void *b)
+int compare_coordinates(const void* a, const void *b)
 {
   coordinate *curr = (coordinate *)a,
              *next = (coordinate *)b;
@@ -74,12 +75,12 @@ int compare_coordinate(const void* a, const void *b)
   return next_norm - curr_norm;
 }
 
-// Heuristica - Regra de Warsndorff
+// Heuristica - Regra de Warnsdorff
 // Ordena os movimentos pela maior distancia euclidiana de suas coordenadas ate o centro do tabuleiro
 // Utilizando Quick Sort
 void warnsdorff(coordinate neighbours[], int neighbour_amount)
 {
-  qsort(neighbours, neighbour_amount, sizeof(coordinate), compare_coordinate);
+  qsort(neighbours, neighbour_amount, sizeof(coordinate), compare_coordinates);
 }
 // Preenche o tour com movimentos do cavalo pelo algoritmo de Pesquisa por Profundidade
 // Retorna 1 se o tour foi completo
@@ -99,20 +100,23 @@ int tour(int board[N][N], coordinate c, int n, horse *h)
   int neighbour_amount = get_neighbours(board, neighbours, c);
   warnsdorff(neighbours, neighbour_amount);
 
-  if (neighbour_amount == 0) h->tour_impossible = 1;
+  if (neighbour_amount == 0) h->was_leaf_found = 1;
 
   for (int i=0; i<neighbour_amount; i++)
   {
     int tour_result = tour(board, neighbours[i], n+1, h);
-    if(h->tour_impossible)
+    if (tour_result == 1)
+      return 1;
+
+    // pruning
+    // caso verdadeiro, interrompe a busca pelos vizinhos de c
+    // e retorna a casa que chamou este nivel
+    if(h->was_leaf_found)
     {
-      h->tour_impossible = 0;
+      h->was_leaf_found = 0;
       h->backtracks++;
       break;
     }
-
-    if (tour_result == 1)
-      return 1;
     
     h->backtracks++;
   }
@@ -122,19 +126,17 @@ int tour(int board[N][N], coordinate c, int n, horse *h)
   return 0;
 }
 
-void print_results(int board[N][N], horse h)
+void print_results(int board[N][N], horse h, FILE* output_file)
 {
-  FILE* saida = fopen("saida.txt", "a");
   // printando o tabuleiro
   for (int i=0; i<N; i++) {
     for (int j=0; j<N-1; j++) {
       // printa o numero com um zero a frente
-      fprintf(saida, "%.2d ", board[i][j]);
+      fprintf(output_file, "%.2d ", board[i][j]);
     }
-    fprintf(saida, "%.2d\n", board[i][N-1]);
+    fprintf(output_file, "%.2d\n", board[i][N-1]);
   }
-  fprintf(saida, "%ld %ld\n", h.visits, h.backtracks);
-  fclose(saida);
+  fprintf(output_file, "%ld %ld\n", h.visits, h.backtracks);
 }
 
 void passeio(int x, int y)
@@ -147,12 +149,15 @@ void passeio(int x, int y)
   horse h = {0, 0, 0};
   int n = 1;
 
+  FILE* saida = fopen("saida.txt", "a");
   coordinate c = {x-1, y-1};
   int tour_result = !tour(board, c, n, &h);
   if(tour_result == 1) {
-    printf("Possibilidades exauridas; Nenhum passeio encontrado.\n");
+    fprintf(saida, "Possibilidades exauridas; Nenhum passeio encontrado.\n");
+    fclose(saida);
     return;
   }
 
-  print_results(board, h);
+  print_results(board, h, saida);
+  fclose(saida);
 }
